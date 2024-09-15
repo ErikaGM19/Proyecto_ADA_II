@@ -1,133 +1,109 @@
-import tkinter as tk
-from tkinter import Menu, filedialog, messagebox, scrolledtext
+import customtkinter as ctk # Importación de la librería personalizada
+from tkinter import filedialog # Importación del módulo para abrir el diálogo de archivos
+from PIL import Image, ImageTk  # Importar las clases Image y ImageTk de la librería Pillow
 
-# Función para cargar el archivo de texto
-red_social_inicial = []
-
-def cargar_archivo():
-    archivo = filedialog.askopenfilename(
-        title="Cargar red", filetypes=(("Archivos de texto", "*.txt"), ("Todos los archivos", "*.*")))
-    
-    if archivo:
-        try:
-            with open(archivo, 'r') as f:
-                contenido = f.read()
-                validar_contenido(contenido)
-        except Exception as e:
-            messagebox.showerror("Error", f"No se pudo cargar el archivo: {e}")
-
-# Función para validar y procesar el contenido del archivo
-def validar_contenido(contenido):
-    lineas = contenido.splitlines()
-    
-    try:
-        # Validar que la primera línea sea n (cantidad de agentes)
-        n = int(lineas[0])
-        if n <= 0:
-            raise ValueError("El valor de n debe ser mayor que 0.")
-        
-        # Validar que haya n líneas de agentes + 1 para r_max
-        if len(lineas) != n + 2:  # n agentes, 1 línea de r_max, 1 línea para n
-            raise ValueError("La cantidad de agentes no coincide con el valor de n.")
-        
-        # Validar y extraer elementos A, B
-        elementos = []
-        for i in range(1, n + 1):  # Desde la segunda línea hasta la (n+1)-ésima línea
-            A, B = map(float, lineas[i].split(','))
-            if not (-100 <= A <= 100) or not (0 <= B <= 1):
-                raise ValueError("Los valores de A y B están fuera de los límites permitidos.")
-            elementos.append([A, B])
-        
-        # Validar r_max en la última línea
-        r_max = int(lineas[-1])
-        if r_max < 0:
-            raise ValueError("El valor de r_max debe ser un entero no negativo.")
-        
-        # Estructurar la red_social
-        red_social = [elementos, r_max]
-        red_social_inicial.append(red_social)
-
-        # Mostrar el archivo cargado y red_social en las cajas de texto
-        caja_archivo.delete(1.0, tk.END)
-        caja_archivo.insert(tk.END, contenido)
-        
-        caja_respuesta.delete(1.0, tk.END)
-        caja_respuesta.insert(tk.END, f"Archivo cargado correctamente:\nRed Social: {red_social}")
-        
-    except Exception as e:
-        messagebox.showerror("Error", f"El archivo cargado no cumple con el estándar: {e}")
-        caja_archivo.delete(1.0, tk.END)
-        caja_respuesta.delete(1.0, tk.END)
-
-# Funciones de los botones
-def fuerza_bruta():
-    from modexFB import modexFB
-    lista_aplanada_red_social = sum(red_social_inicial, start=[])
-    respuesta = modexFB(lista_aplanada_red_social)
-    caja_respuesta.insert(tk.END, f"\nEjecutando Fuerza Bruta...\n {respuesta}")
-    red_social_inicial.clear() 
-def voraz():
-    caja_respuesta.insert(tk.END, "\nEjecutando Voraz...\n")
-
-def dinamica():
-    caja_respuesta.insert(tk.END, "\nEjecutando Programación Dinámica...\n")
-
-# Función para limpiar la interfaz y la caché
-def limpiar():
-    red_social_inicial.clear()  # Limpiar la caché
-    caja_archivo.delete(1.0, tk.END)
-    caja_respuesta.delete(1.0, tk.END)
-
-# Función para salir
-def salir():
-    root.quit()
+# Inicializamos la aplicación y configuramos el tema
+ctk.set_appearance_mode("dark")  
+ctk.set_default_color_theme("dark-blue") 
 
 # Crear la ventana principal
-root = tk.Tk()
-root.title("Proyecto ADA II")
-root.geometry("800x600")
+root = ctk.CTk() 
+root.geometry("1000x600") # Tamaño inicial de la ventana
+root.title("Proyecto I - ADA II - Grupo 4") 
 
-# Configurar cierre de la ventana con "Salir" o con la X
-root.protocol("WM_DELETE_WINDOW", salir)
+# Función para cargar el archivo
+def cargar_archivo():
+    archivo = filedialog.askopenfilename(title="Cargar red", filetypes=(("Archivos de texto", "*.txt"), ("Todos los archivos", "*.*")))
+    if archivo:
+        print(f"Archivo cargado: {archivo}")
 
-# Crear la barra de menú
-menu_bar = Menu(root)
-root.config(menu=menu_bar)
+# Definir las funciones de los algoritmos
+def ejecutar_fuerza_bruta():
+    print("Ejecutando Fuerza Bruta")
 
-# Menú "Archivo"
-archivo_menu = Menu(menu_bar, tearoff=0)
-archivo_menu.add_command(label="Cargar red", command=cargar_archivo)
-archivo_menu.add_separator()
-archivo_menu.add_command(label="Limpiar", command=limpiar)  # Opción "Limpiar" en el menú
-archivo_menu.add_separator()
-archivo_menu.add_command(label="Salir", command=salir)
-menu_bar.add_cascade(label="Archivo", menu=archivo_menu)
+def ejecutar_programacion_dinamica():
+    print("Ejecutando Programación Dinámica")
 
-# Crear el marco para los botones
-frame_botones = tk.Frame(root)
-frame_botones.pack(pady=10)
+def ejecutar_voraz():
+    print("Ejecutando Voraz")
 
-# Botones
-btn_fuerza_bruta = tk.Button(frame_botones, text="Fuerza Bruta", command=fuerza_bruta, width=20)
-btn_fuerza_bruta.grid(row=0, column=0, padx=10)
+# Función que maneja la selección del algoritmo
+def ejecutar_algoritmo(algoritmo):
+    if algoritmo == "Fuerza Bruta":
+        ejecutar_fuerza_bruta()
+    elif algoritmo == "Programación Dinámica":
+        ejecutar_programacion_dinamica()
+    elif algoritmo == "Voraz":
+        ejecutar_voraz()
 
-btn_voraz = tk.Button(frame_botones, text="Voraz", command=voraz, width=20)
-btn_voraz.grid(row=0, column=1, padx=10)
+# Crear la barra superior roja con el título
+barra_superior = ctk.CTkFrame(root, height=105, corner_radius=0, fg_color="darkred")  
+barra_superior.grid(row=0, column=0, columnspan=3, sticky="ew")
+barra_superior.pack_propagate(False)  
 
-btn_dinamica = tk.Button(frame_botones, text="Dinámica", command=dinamica, width=20)
-btn_dinamica.grid(row=0, column=2, padx=10)
+# Título
+titulo_label = ctk.CTkLabel(barra_superior, text="Moderando el extremismo de opiniones en una red social", font=("Montserrat", 24), text_color="white")
+titulo_label.place(relx=0.5, rely=0.5, anchor="center") # Centrar el título
 
-# Caja de texto para visualizar el archivo cargado
-caja_archivo = scrolledtext.ScrolledText(root, height=10, width=100)
-caja_archivo.pack(pady=10)
+# Cargar la imagen del logo 
+logo_image = Image.open("logoUV_gris.jpg")
+logo_image = logo_image.resize((95, 105))
+logo_image_tk = ImageTk.PhotoImage(logo_image)
 
-# Caja de texto para visualizar la respuesta
-caja_respuesta = scrolledtext.ScrolledText(root, height=10, width=100)
-caja_respuesta.pack(pady=10)
+# Mostrar la imagen del logo
+logo_label = ctk.CTkLabel(barra_superior, image=logo_image_tk, text="")
+logo_label.pack(side="left", anchor="nw", padx=0, pady=0) 
 
-# Botón "Limpiar" en la parte inferior de la interfaz
-btn_limpiar = tk.Button(root, text="Limpiar", command=limpiar, width=20)
-btn_limpiar.pack(pady=10)
+# Crear el área izquierda
+frame_resultados = ctk.CTkFrame(root, width=450, height=35, corner_radius=0, fg_color="gray30")  
+frame_resultados.grid(row=1, column=0, rowspan=2, sticky="nswe")
+
+resultado_label = ctk.CTkLabel(frame_resultados, text="Resultado\npruebas realizadas", font=("Montserrat", 10), text_color="white", justify="center")
+resultado_label.pack(pady=10)
+
+# Crear el área principal de contenido 
+frame_contenido = ctk.CTkFrame(root, fg_color="gray25", width=150, height=100)  
+frame_contenido.grid(row=1, column=1, sticky="ew", padx=10, pady=10)
+
+# Título dentro del contenido
+label_seleccion = ctk.CTkLabel(frame_contenido, text="Seleccione el algoritmo y la prueba a ejecutar", font=("Montserrat", 20))
+label_seleccion.pack(pady=10)
+
+# Crear un marco para alinear los menús desplegables de forma horizontal
+frame_menus = ctk.CTkFrame(frame_contenido, fg_color="gray25")
+frame_menus.pack(pady=10)
+
+# Menú desplegable para Algoritmos
+opciones_algoritmos = ctk.CTkOptionMenu(
+    frame_menus,
+    values=["Fuerza Bruta", "Programación Dinámica", "Voraz"],
+    command=lambda seleccion: ejecutar_algoritmo(seleccion),
+    fg_color="darkred", 
+    button_color="darkred",  
+    button_hover_color="#c71818",  
+)
+opciones_algoritmos.grid(row=0, column=0, padx=10)
+
+# Menú desplegable para Pruebas
+opciones_pruebas = ctk.CTkOptionMenu(
+    frame_menus,
+    values=["Prueba 1", "Prueba 2", "Prueba 3"],
+    fg_color="darkred", 
+    button_color="darkred", 
+    button_hover_color="#c71818"  
+)
+opciones_pruebas.grid(row=0, column=1, padx=80)
+
+# Crear el área para mostrar el resultado de la ejecución
+frame_resultado = ctk.CTkFrame(root, fg_color="gray25", width=150, height=400) 
+frame_resultado.grid(row=2, column=1, sticky="nsew", padx=10, pady=10)
+
+label_resultado = ctk.CTkLabel(frame_resultado, text="Resultado de la ejecución", font=("Montserrat", 30))
+label_resultado.pack(pady=10)
+
+# Ajustar el peso de las columnas y filas para que la interfaz sea más responsive 
+root.grid_columnconfigure(1, weight=1)
+root.grid_rowconfigure(2, weight=1)  
 
 # Ejecutar la aplicación
 root.mainloop()
