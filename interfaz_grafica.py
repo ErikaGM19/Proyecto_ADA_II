@@ -3,6 +3,7 @@ import os
 import importlib.util
 from tkinter import filedialog # Importación del módulo para abrir el diálogo de archivos
 from PIL import Image, ImageTk  # Importar las clases Image y ImageTk de la librería Pillow
+import time
 
 # Inicializamos la aplicación y configuramos el tema
 ctk.set_appearance_mode("dark")  
@@ -70,8 +71,12 @@ def ejecutar_algoritmo(algoritmo):
                 spec.loader.exec_module(modexFB)
 
                 # Ejecutar la función modexFB del archivo modexFB.py
+                start_time = time.time()
                 resultado = modexFB.modexFB(red_social)
+                end_time = time.time()
+                execution_time = end_time - start_time
                 resultado_area.insert(ctk.END, f"Resultado: {resultado}\n")
+                resultado_area.insert(ctk.END, f"Tiempo total de ejecucion: {execution_time} segundos.")
             else:
                 resultado_area.insert(ctk.END, "El archivo modexFB.py no se encontró.\n")
         except Exception as e:
@@ -86,8 +91,13 @@ def ejecutar_algoritmo(algoritmo):
                 spec.loader.exec_module(modexV)
 
                 # Ejecutar la función modexV del archivo modexV.py
+                start_time = time.time()
                 resultado = modexV.modexV(red_social)
+                end_time = time.time() 
+                execution_time = end_time - start_time
                 resultado_area.insert(ctk.END, f"Resultado Voraz: {resultado}\n")
+                resultado_area.insert(ctk.END, f"Tiempo total de ejecucion: {execution_time} segundos.\n")
+
             else:
                 resultado_area.insert(ctk.END, "El archivo modexV.py no se encontró.\n")
         except Exception as e:
