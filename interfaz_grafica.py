@@ -76,8 +76,23 @@ def ejecutar_algoritmo(algoritmo):
                 resultado_area.insert(ctk.END, "El archivo modexFB.py no se encontró.\n")
         except Exception as e:
             resultado_area.insert(ctk.END, f"Error al ejecutar Fuerza Bruta: {str(e)}\n")
-    elif algoritmo == "Programación Dinámica":
-        resultado_area.insert(ctk.END, "Ejecutando Programación Dinámica...\n")
+    
+    elif algoritmo == "Voraz":
+        try:
+            # Verificar si modexV.py existe y cargarlo dinámicamente
+            if os.path.exists("modexV.py"):
+                spec = importlib.util.spec_from_file_location("modexV", "./modexV.py")
+                modexV = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(modexV)
+
+                # Ejecutar la función modexV del archivo modexV.py
+                resultado = modexV.modexV(red_social)
+                resultado_area.insert(ctk.END, f"Resultado Voraz: {resultado}\n")
+            else:
+                resultado_area.insert(ctk.END, "El archivo modexV.py no se encontró.\n")
+        except Exception as e:
+            resultado_area.insert(ctk.END, f"Error al ejecutar Voraz: {str(e)}\n")
+
     elif algoritmo == "Voraz":
         resultado_area.insert(ctk.END, "Ejecutando Voraz...\n")
 
@@ -106,7 +121,9 @@ def obtener_algoritmos():
     # Verificar si modexFB.py existe en la raíz
     if os.path.exists("modexFB.py"):
         algoritmos_disponibles.append("Fuerza Bruta")
-    else:
+    if os.path.exists("modexV.py"):
+        algoritmos_disponibles.append("Voraz")
+    if not algoritmos_disponibles:
         algoritmos_disponibles = ["No hay algoritmos disponibles"]
 
 # Función para actualizar el menú de algoritmos
