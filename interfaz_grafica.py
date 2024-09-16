@@ -1,133 +1,229 @@
-import tkinter as tk
-from tkinter import Menu, filedialog, messagebox, scrolledtext
+import customtkinter as ctk # libreria encargada de la interfaz gráfica
+import os 
+import importlib.util
+from tkinter import filedialog # Importación del módulo para abrir el diálogo de archivos
+from PIL import Image, ImageTk  # Importar las clases Image y ImageTk de la librería Pillow
 
-# Función para cargar el archivo de texto
-red_social_inicial = []
-
-def cargar_archivo():
-    archivo = filedialog.askopenfilename(
-        title="Cargar red", filetypes=(("Archivos de texto", "*.txt"), ("Todos los archivos", "*.*")))
-    
-    if archivo:
-        try:
-            with open(archivo, 'r') as f:
-                contenido = f.read()
-                validar_contenido(contenido)
-        except Exception as e:
-            messagebox.showerror("Error", f"No se pudo cargar el archivo: {e}")
-
-# Función para validar y procesar el contenido del archivo
-def validar_contenido(contenido):
-    lineas = contenido.splitlines()
-    
-    try:
-        # Validar que la primera línea sea n (cantidad de agentes)
-        n = int(lineas[0])
-        if n <= 0:
-            raise ValueError("El valor de n debe ser mayor que 0.")
-        
-        # Validar que haya n líneas de agentes + 1 para r_max
-        if len(lineas) != n + 2:  # n agentes, 1 línea de r_max, 1 línea para n
-            raise ValueError("La cantidad de agentes no coincide con el valor de n.")
-        
-        # Validar y extraer elementos A, B
-        elementos = []
-        for i in range(1, n + 1):  # Desde la segunda línea hasta la (n+1)-ésima línea
-            A, B = map(float, lineas[i].split(','))
-            if not (-100 <= A <= 100) or not (0 <= B <= 1):
-                raise ValueError("Los valores de A y B están fuera de los límites permitidos.")
-            elementos.append([A, B])
-        
-        # Validar r_max en la última línea
-        r_max = int(lineas[-1])
-        if r_max < 0:
-            raise ValueError("El valor de r_max debe ser un entero no negativo.")
-        
-        # Estructurar la red_social
-        red_social = [elementos, r_max]
-        red_social_inicial.append(red_social)
-
-        # Mostrar el archivo cargado y red_social en las cajas de texto
-        caja_archivo.delete(1.0, tk.END)
-        caja_archivo.insert(tk.END, contenido)
-        
-        caja_respuesta.delete(1.0, tk.END)
-        caja_respuesta.insert(tk.END, f"Archivo cargado correctamente:\nRed Social: {red_social}")
-        
-    except Exception as e:
-        messagebox.showerror("Error", f"El archivo cargado no cumple con el estándar: {e}")
-        caja_archivo.delete(1.0, tk.END)
-        caja_respuesta.delete(1.0, tk.END)
-
-# Funciones de los botones
-def fuerza_bruta():
-    from modexFB import modexFB
-    lista_aplanada_red_social = sum(red_social_inicial, start=[])
-    respuesta = modexFB(lista_aplanada_red_social)
-    caja_respuesta.insert(tk.END, f"\nEjecutando Fuerza Bruta...\n {respuesta}")
-    red_social_inicial.clear() 
-def voraz():
-    caja_respuesta.insert(tk.END, "\nEjecutando Voraz...\n")
-
-def dinamica():
-    caja_respuesta.insert(tk.END, "\nEjecutando Programación Dinámica...\n")
-
-# Función para limpiar la interfaz y la caché
-def limpiar():
-    red_social_inicial.clear()  # Limpiar la caché
-    caja_archivo.delete(1.0, tk.END)
-    caja_respuesta.delete(1.0, tk.END)
-
-# Función para salir
-def salir():
-    root.quit()
+# Inicializamos la aplicación y configuramos el tema
+ctk.set_appearance_mode("dark")  
+ctk.set_default_color_theme("dark-blue") 
 
 # Crear la ventana principal
-root = tk.Tk()
-root.title("Proyecto ADA II")
-root.geometry("800x600")
+root = ctk.CTk() 
+root.geometry("1000x600") # Tamaño inicial de la ventana
+root.title("Proyecto I - ADA II - Grupo 4") 
 
-# Configurar cierre de la ventana con "Salir" o con la X
-root.protocol("WM_DELETE_WINDOW", salir)
+# Variable global para almacenar las pruebas disponibles y los algoritmos
+pruebas_disponibles = []
+algoritmos_disponibles = []
+prueba_seleccionada = None
 
-# Crear la barra de menú
-menu_bar = Menu(root)
-root.config(menu=menu_bar)
+# Función para cargar el archivo de prueba seleccionado
+def cargar_archivo(prueba):
+    try:
+        carpeta_pruebas = "Pruebas"
+        ruta_prueba = os.path.join(carpeta_pruebas, prueba)
+        with open(ruta_prueba, "r") as archivo:
+            datos_prueba = archivo.readlines()  # Leer todas las líneas del archivo
+            datos_prueba = [line.strip() for line in datos_prueba]  # Limpiar espacios en blanco
+            
+            # Procesar los datos de la prueba
+            num_agentes = int(datos_prueba[0])  # Primer número: cantidad de agentes
+            agentes = []  # Lista para almacenar los agentes (opinión, receptividad)
+            
+            # Extraer las opiniones y receptividades de las siguientes líneas
+            for i in range(1, num_agentes + 1):
+                opinion, receptividad = map(float, datos_prueba[i].split(','))  # Separar por coma y convertir a float
+                agentes.append((opinion, receptividad))
+            
+            r_max = float(datos_prueba[num_agentes + 1])  # Último número: valor de R_max
 
-# Menú "Archivo"
-archivo_menu = Menu(menu_bar, tearoff=0)
-archivo_menu.add_command(label="Cargar red", command=cargar_archivo)
-archivo_menu.add_separator()
-archivo_menu.add_command(label="Limpiar", command=limpiar)  # Opción "Limpiar" en el menú
-archivo_menu.add_separator()
-archivo_menu.add_command(label="Salir", command=salir)
-menu_bar.add_cascade(label="Archivo", menu=archivo_menu)
+            # Crear la estructura esperada por el algoritmo
+            red_social = (agentes, r_max)
+            
+            resultado_area.insert(ctk.END, f"Prueba cargada: {red_social}\n")  # Mostrar el contenido para depuración
+            return red_social
+    except Exception as e:
+        resultado_area.insert(ctk.END, f"Error al cargar la prueba: {str(e)}\n")
+        return None
 
-# Crear el marco para los botones
-frame_botones = tk.Frame(root)
-frame_botones.pack(pady=10)
+# Definir las funciones de los algoritmos
+def ejecutar_algoritmo(algoritmo):
+    resultado_area.delete("1.0", ctk.END)  # Limpiar el área de resultados
 
-# Botones
-btn_fuerza_bruta = tk.Button(frame_botones, text="Fuerza Bruta", command=fuerza_bruta, width=20)
-btn_fuerza_bruta.grid(row=0, column=0, padx=10)
+    # Cargar los datos de la prueba seleccionada
+    if prueba_seleccionada is None:
+        resultado_area.insert(ctk.END, "No se ha seleccionado una prueba.\n")
+        return
 
-btn_voraz = tk.Button(frame_botones, text="Voraz", command=voraz, width=20)
-btn_voraz.grid(row=0, column=1, padx=10)
+    red_social = cargar_archivo(prueba_seleccionada)
+    if red_social is None:
+        resultado_area.insert(ctk.END, "Error al cargar los datos de la prueba.\n")
+        return
 
-btn_dinamica = tk.Button(frame_botones, text="Dinámica", command=dinamica, width=20)
-btn_dinamica.grid(row=0, column=2, padx=10)
+    if algoritmo == "Fuerza Bruta":
+        try:
+            # Verificar si modexFB.py existe y cargarlo dinámicamente
+            if os.path.exists("modexFB.py"):
+                spec = importlib.util.spec_from_file_location("modexFB", "./modexFB.py")
+                modexFB = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(modexFB)
 
-# Caja de texto para visualizar el archivo cargado
-caja_archivo = scrolledtext.ScrolledText(root, height=10, width=100)
-caja_archivo.pack(pady=10)
+                # Ejecutar la función modexFB del archivo modexFB.py
+                resultado = modexFB.modexFB(red_social)
+                resultado_area.insert(ctk.END, f"Resultado: {resultado}\n")
+            else:
+                resultado_area.insert(ctk.END, "El archivo modexFB.py no se encontró.\n")
+        except Exception as e:
+            resultado_area.insert(ctk.END, f"Error al ejecutar Fuerza Bruta: {str(e)}\n")
+    elif algoritmo == "Programación Dinámica":
+        resultado_area.insert(ctk.END, "Ejecutando Programación Dinámica...\n")
+    elif algoritmo == "Voraz":
+        resultado_area.insert(ctk.END, "Ejecutando Voraz...\n")
 
-# Caja de texto para visualizar la respuesta
-caja_respuesta = scrolledtext.ScrolledText(root, height=10, width=100)
-caja_respuesta.pack(pady=10)
+# Función para obtener todas las pruebas disponibles en la carpeta "Pruebas"
+def obtener_pruebas():
+    global pruebas_disponibles
+    carpeta_pruebas = "Pruebas"
+    try:
+        # Listar los archivos .txt en la carpeta de pruebas
+        pruebas_disponibles = [f for f in os.listdir(carpeta_pruebas) if f.endswith(".txt")]
+        if pruebas_disponibles:
+            pruebas_disponibles = sorted(pruebas_disponibles, key=lambda x: int(''.join(filter(str.isdigit, x))))
+        else:
+            pruebas_disponibles = ["No hay pruebas disponibles"]
+    except FileNotFoundError:
+        pruebas_disponibles = ["Carpeta 'Pruebas' no encontrada"]
 
-# Botón "Limpiar" en la parte inferior de la interfaz
-btn_limpiar = tk.Button(root, text="Limpiar", command=limpiar, width=20)
-btn_limpiar.pack(pady=10)
+# Función para actualizar las pruebas en el menú desplegable
+def actualizar_pruebas_menu():
+    obtener_pruebas()  # Obtener la lista de pruebas desde la carpeta
+    opciones_pruebas.configure(values=pruebas_disponibles)  # Actualizar el menú desplegable con las pruebas disponibles
+
+# Función para obtener los algoritmos disponibles en la carpeta "Algoritmos"
+def obtener_algoritmos():
+    global algoritmos_disponibles
+    # Verificar si modexFB.py existe en la raíz
+    if os.path.exists("modexFB.py"):
+        algoritmos_disponibles.append("Fuerza Bruta")
+    else:
+        algoritmos_disponibles = ["No hay algoritmos disponibles"]
+
+# Función para actualizar el menú de algoritmos
+def actualizar_algoritmos_menu():
+    obtener_algoritmos()  # Obtener la lista de algoritmos desde la carpeta
+    opciones_algoritmos.configure(values=algoritmos_disponibles)  # Actualizar el menú desplegable con los algoritmos disponibles
+
+# Función para seleccionar una prueba
+def seleccionar_prueba(prueba):
+    global prueba_seleccionada
+    prueba_seleccionada = prueba
+    resultado_area.insert(ctk.END, f"Prueba seleccionada: {prueba}\n")
+
+# Crear la barra superior roja con el título
+barra_superior = ctk.CTkFrame(root, height=105, corner_radius=0, fg_color="darkred")  
+barra_superior.grid(row=0, column=0, columnspan=3, sticky="ew")
+
+
+# Título
+titulo_label = ctk.CTkLabel(barra_superior, text="Moderando el extremismo de opiniones en una red social", font=("Montserrat", 24), text_color="white")
+titulo_label.place(relx=0.5, rely=0.5, anchor="center") # Centrar el título
+
+# Cargar la imagen del logo 
+logo_image = Image.open("logoUV_gris.jpg")
+logo_image = logo_image.resize((95, 105))
+logo_image_tk = ImageTk.PhotoImage(logo_image)
+
+# Mostrar la imagen del logo
+logo_label = ctk.CTkLabel(barra_superior, image=logo_image_tk, text="")
+logo_label.grid(row=0, column=0, padx=0, pady=0) 
+
+# Crear el área izquierda
+frame_resultados = ctk.CTkFrame(root, width=450, height=35, corner_radius=0, fg_color="gray30")  
+frame_resultados.grid(row=1, column=0, rowspan=2, sticky="nswe")
+
+resultado_label = ctk.CTkLabel(frame_resultados, text="Resultado\npruebas realizadas", font=("Montserrat", 10), text_color="white", justify="center")
+resultado_label.grid(row=0, column=0, pady=10)
+
+# Crear el área principal de contenido 
+frame_contenido = ctk.CTkFrame(root, fg_color="gray25", width=150, height=100)  
+frame_contenido.grid(row=1, column=1, sticky="ew", padx=10, pady=10)
+
+# Título dentro del contenido
+label_seleccion = ctk.CTkLabel(frame_contenido, text="Seleccione el algoritmo y la prueba a ejecutar", font=("Montserrat", 20))
+label_seleccion.grid(row=0, column=0, pady=10, sticky="ew")
+
+# Crear un marco para alinear los menús desplegables de forma horizontal
+frame_menus_botones = ctk.CTkFrame(frame_contenido, fg_color="gray25")
+frame_menus_botones.grid(row=1, column=0, pady=10, padx=10, sticky="ew")
+
+# Alinear centrado el contenido dentro del frame
+frame_menus_botones.grid_columnconfigure(0, weight=1)
+frame_menus_botones.grid_columnconfigure((0, 1, 2, 3), weight=1)
+
+# Menú desplegable para Algoritmos
+opciones_algoritmos = ctk.CTkOptionMenu(
+    frame_menus_botones,
+    values=["Cargando algoritmos..."],
+    command=lambda seleccion: ejecutar_algoritmo(seleccion),
+    fg_color="darkred", 
+    button_color="darkred",  
+    button_hover_color="#c71818",  
+)
+opciones_algoritmos.grid(row=0, column=0, padx=10)
+
+# Menú desplegable para Pruebas
+opciones_pruebas = ctk.CTkOptionMenu(
+    frame_menus_botones,
+    values=["Cargando pruebas..."],
+    command=seleccionar_prueba,  # Llama a seleccionar_prueba cuando se selecciona una prueba
+    fg_color="darkred", 
+    button_color="darkred", 
+    button_hover_color="#c71818"  
+)
+opciones_pruebas.grid(row=0, column=1, padx=10)
+
+
+# Botón de "Ejecutar prueba"
+btn_ejecutar_prueba = ctk.CTkButton(
+    frame_menus_botones,
+    text="Ejecutar prueba", 
+    fg_color="darkred", 
+    hover_color="darkred",
+    command=lambda: ejecutar_algoritmo("Fuerza Bruta")
+)
+btn_ejecutar_prueba.grid(row=0, column=2, padx=10)
+
+# Botón de "Detener prueba"
+btn_detener_prueba = ctk.CTkButton(
+    frame_menus_botones,
+    text="Detener prueba", 
+    fg_color="darkred", 
+    hover_color="darkred",
+    command=lambda: resultado_area.insert(ctk.END, "Prueba detenida\n")
+)
+btn_detener_prueba.grid(row=0, column=3, padx=10)
+
+# Crear el área para mostrar el resultado de la ejecución
+frame_resultado = ctk.CTkFrame(root, fg_color="gray25", width=150, height=400) 
+frame_resultado.grid(row=2, column=1, sticky="nsew", padx=10, pady=10)
+
+label_resultado = ctk.CTkLabel(frame_resultado, text="Resultado de la ejecución", font=("Montserrat", 30))
+label_resultado.grid(row=0, column=0, pady=10)
+
+# Crear el área de texto para mostrar resultados
+resultado_area = ctk.CTkTextbox(frame_resultado, height=150, width=870)
+resultado_area.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+
+# Ajustar el peso de las columnas y filas para que la interfaz sea más responsive 
+root.grid_columnconfigure(1, weight=1)
+root.grid_rowconfigure(2, weight=1)  
+frame_resultado.grid_rowconfigure(1, weight=1)
+
+# Actualizar el menú de pruebas al iniciar la aplicación
+actualizar_pruebas_menu()
+actualizar_algoritmos_menu()
 
 # Ejecutar la aplicación
 root.mainloop()
+
