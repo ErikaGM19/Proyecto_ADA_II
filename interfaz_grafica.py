@@ -226,7 +226,7 @@ opciones_pruebas.grid(row=0, column=0, padx=10)
 # Menú desplegable para Algoritmos
 opciones_algoritmos = ctk.CTkOptionMenu(
     frame_menus_botones,
-    values=["Cargando algoritmos..."],
+    values=["Fuerza Bruta", "Voraz"],
     command=lambda seleccion: ejecutar_algoritmo(seleccion),
     fg_color="darkred", 
     button_color="darkred",  
@@ -240,7 +240,7 @@ btn_ejecutar_prueba = ctk.CTkButton(
     text="Ejecutar prueba", 
     fg_color="darkred", 
     hover_color="darkred",
-    command=lambda: ejecutar_algoritmo("Fuerza Bruta")
+    command=lambda: ejecutar_algoritmo(opciones_algoritmos.get())
 )
 btn_ejecutar_prueba.grid(row=0, column=2, padx=10)
 
