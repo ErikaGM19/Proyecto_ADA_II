@@ -24,49 +24,42 @@ def extraccion_basada_en_esfuerzo(red_social):
     
     # Iniciar una lista para almacenar los agentes seleccionados
     lista_agentes_por_esfuerzo = []
+    esfuerzo_acumulado = 0
     estrategia_actual = []
     
     # Iterar sobre los rangos de receptividad, de 1.0 a 0.1 en pasos de 0.1
-    for i in range(10):
-        rango_max = 1.0 - (i * 0.1)
-        rango_min = 0.0 - (i * 0.1)
+    for agente in agentes_ordenados:
+        try:
+            # Calculamos el esfuerzo acumulado si agregamos este agente
+            estrategia_actual = obtener_estrategia(red_social, lista_agentes_por_esfuerzo + [agente])
+            nuevo_esfuerzo = sum(calcular_esfuerzos(red_social, estrategia_actual))
 
-        # Filtrar los agentes que caen dentro del rango actual
-        agentes_en_rango = [agente for agente in agentes_ordenados if rango_min <= agente[1] <= rango_max]
-
-        # Si hay agentes en este rango, añadirlos a lista_agentes_por_esfuerzo
-        if agentes_en_rango:
-            lista_agentes_por_esfuerzo += agentes_en_rango
-            
-            # Calcular la estrategia para los agentes seleccionados
-            estrategia_actual = obtener_estrategia(red_social, lista_agentes_por_esfuerzo)
-            
-            # Calcular el esfuerzo basado en la estrategia actual
-            esfuerzo = sum(calcular_esfuerzos(red_social,estrategia_actual))
-            
-            # Si el esfuerzo es menor o igual al máximo permitido, detener el ciclo y devolver los agentes
-            if esfuerzo <= esfuerzo_max:
-                return lista_agentes_por_esfuerzo
+            # Si no excedemos el esfuerzo máximo, añadimos al agente
+            if nuevo_esfuerzo <= esfuerzo_max:
+                lista_agentes_por_esfuerzo.append(agente)
+                esfuerzo_acumulado = nuevo_esfuerzo
             else:
-                # Si el esfuerzo es mayor al permitido, eliminar el agente con la receptividad más baja y recalcular
-                while esfuerzo > esfuerzo_max and lista_agentes_por_esfuerzo:
-                    # Eliminar el agente con la receptividad más baja (último agente de la lista, ya que está ordenada)
-                    lista_agentes_por_esfuerzo.pop(-1)
-                    
-                    # Recalcular la estrategia y el esfuerzo
-                    estrategia_actual = obtener_estrategia(red_social, lista_agentes_por_esfuerzo)
-                    esfuerzo = sum(calcular_esfuerzos(red_social, estrategia_actual))
+                # Si el esfuerzo excede, dejamos de añadir agentes
+                break
+
+        except IndexError as e:
+            print(f"Error de índice: {str(e)} al procesar agente {agente}")
+            continue
 
     # Si no se encuentra una combinación válida, devolver los agentes seleccionados hasta ahora
     return lista_agentes_por_esfuerzo
 
 def modexV(red_social):
- lista_optimizada = extraccion_basada_en_esfuerzo(red_social)
- 
- estrategia = obtener_estrategia(red_social, lista_optimizada)
+    try:
+        lista_optimizada = extraccion_basada_en_esfuerzo(red_social)
+        estrategia = obtener_estrategia(red_social, lista_optimizada)
 
- #from modexFB import moderar, calcular_extremismo
- esfuerzo=sum(calcular_esfuerzos(red_social,estrategia))
- red_social_moderada = moderar(red_social, estrategia)
- extremismo = calcular_extremismo(red_social_moderada)
- return [estrategia, esfuerzo, extremismo]
+        #from modexFB import moderar, calcular_extremismo
+        esfuerzo=sum(calcular_esfuerzos(red_social,estrategia))
+        red_social_moderada = moderar(red_social, estrategia)
+        extremismo = calcular_extremismo(red_social_moderada)
+ 
+        return [estrategia, esfuerzo, extremismo]
+    except Exception as e:
+        print(f"Error al ejecutar modexV: {str(e)}")
+        return None 
