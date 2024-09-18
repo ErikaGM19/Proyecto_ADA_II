@@ -75,8 +75,20 @@ def ejecutar_algoritmo(algoritmo):
                 resultado = modexFB.modexFB(red_social)
                 end_time = time.time()
                 execution_time = end_time - start_time
-                resultado_area.insert(ctk.END, f"Resultado: {resultado}\n")
-                resultado_area.insert(ctk.END, f"Tiempo total de ejecucion: {execution_time} segundos.")
+
+                estrategia, esfuerzo_total, extremismo = resultado
+                extremismo_inicial = modexFB.calcular_extremismo(red_social)
+                agentes_moderados = sum(estrategia)
+                agentes_totales = len(estrategia)
+
+                resultado_area.insert(ctk.END, f"Resultado del algoritmo Fuerza Bruta:\n")
+                resultado_area.insert(ctk.END, f"Estrategia aplicada: {estrategia}\n")
+                resultado_area.insert(ctk.END, f"Esfuerzo total: {esfuerzo_total}\n")
+                resultado_area.insert(ctk.END, f"Extremismo inicial: {extremismo_inicial}\n")
+                resultado_area.insert(ctk.END, f"Extremismo final: {extremismo}\n")
+                resultado_area.insert(ctk.END, f"Agentes moderados: {agentes_moderados}/{agentes_totales}\n")
+                resultado_area.insert(ctk.END, f"Tiempo total de ejecución: {execution_time:.4f} segundos\n")
+
             else:
                 resultado_area.insert(ctk.END, "El archivo modexFB.py no se encontró.\n")
         except Exception as e:
@@ -95,8 +107,20 @@ def ejecutar_algoritmo(algoritmo):
                 resultado = modexV.modexV(red_social)
                 end_time = time.time() 
                 execution_time = end_time - start_time
-                resultado_area.insert(ctk.END, f"Resultado Voraz: {resultado}\n")
-                resultado_area.insert(ctk.END, f"Tiempo total de ejecucion: {execution_time} segundos.\n")
+
+                estrategia, esfuerzo_total, extremismo = resultado
+                extremismo_inicial = modexV.calcular_extremismo(red_social)
+                agentes_moderados = sum(estrategia)
+                agentes_totales = len(estrategia)
+
+                resultado_area.insert(ctk.END, f"Resultado del algoritmo Voraz:\n")
+                resultado_area.insert(ctk.END, f"Estrategia aplicada: {estrategia}\n")
+                resultado_area.insert(ctk.END, f"Esfuerzo total: {esfuerzo_total}\n")
+                resultado_area.insert(ctk.END, f"Extremismo inicial: {extremismo_inicial}\n")
+                resultado_area.insert(ctk.END, f"Extremismo final: {extremismo}\n")
+                resultado_area.insert(ctk.END, f"Agentes moderados: {agentes_moderados}/{agentes_totales}\n")
+                resultado_area.insert(ctk.END, f"Tiempo total de ejecución: {execution_time:.4f} segundos\n")
+                
 
             else:
                 resultado_area.insert(ctk.END, "El archivo modexV.py no se encontró.\n")
@@ -188,17 +212,6 @@ frame_menus_botones.grid(row=1, column=0, pady=10, padx=10, sticky="ew")
 frame_menus_botones.grid_columnconfigure(0, weight=1)
 frame_menus_botones.grid_columnconfigure((0, 1, 2, 3), weight=1)
 
-# Menú desplegable para Algoritmos
-opciones_algoritmos = ctk.CTkOptionMenu(
-    frame_menus_botones,
-    values=["Cargando algoritmos..."],
-    command=lambda seleccion: ejecutar_algoritmo(seleccion),
-    fg_color="darkred", 
-    button_color="darkred",  
-    button_hover_color="#c71818",  
-)
-opciones_algoritmos.grid(row=0, column=0, padx=10)
-
 # Menú desplegable para Pruebas
 opciones_pruebas = ctk.CTkOptionMenu(
     frame_menus_botones,
@@ -208,8 +221,18 @@ opciones_pruebas = ctk.CTkOptionMenu(
     button_color="darkred", 
     button_hover_color="#c71818"  
 )
-opciones_pruebas.grid(row=0, column=1, padx=10)
+opciones_pruebas.grid(row=0, column=0, padx=10)
 
+# Menú desplegable para Algoritmos
+opciones_algoritmos = ctk.CTkOptionMenu(
+    frame_menus_botones,
+    values=["Cargando algoritmos..."],
+    command=lambda seleccion: ejecutar_algoritmo(seleccion),
+    fg_color="darkred", 
+    button_color="darkred",  
+    button_hover_color="#c71818",  
+)
+opciones_algoritmos.grid(row=0, column=1, padx=10)
 
 # Botón de "Ejecutar prueba"
 btn_ejecutar_prueba = ctk.CTkButton(
