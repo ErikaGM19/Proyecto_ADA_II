@@ -127,8 +127,37 @@ def ejecutar_algoritmo(algoritmo):
         except Exception as e:
             resultado_area.insert(ctk.END, f"Error al ejecutar Voraz: {str(e)}\n")
 
-    elif algoritmo == "Voraz":
-        resultado_area.insert(ctk.END, "Ejecutando Voraz...\n")
+    elif algoritmo == algoritmo == "Programación Dinámica":
+        try:
+            # Verificar si modexPD2.py existe y cargarlo dinámicamente
+            if os.path.exists("modexPD2.py"):
+                spec = importlib.util.spec_from_file_location("modexPD2", "./modexPD2.py")
+                modexPD2 = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(modexPD2)
+
+                # Ejecutar la función modexPD del archivo modexPD2.py
+                start_time = time.time()
+                resultado = modexPD2.modexPD(red_social)
+                end_time = time.time()
+                execution_time = end_time - start_time
+
+                estrategia, esfuerzo_total, extremismo = resultado
+                extremismo_inicial = modexPD2.calcular_extremismo([agente[0] for agente in red_social[0]])
+                agentes_moderados = sum(estrategia)
+                agentes_totales = len(estrategia)
+
+                resultado_area.insert(ctk.END, f"Resultado del algoritmo Programación Dinámica:\n")
+                resultado_area.insert(ctk.END, f"Estrategia aplicada: {estrategia}\n")
+                resultado_area.insert(ctk.END, f"Esfuerzo total: {esfuerzo_total}\n")
+                resultado_area.insert(ctk.END, f"Extremismo inicial: {extremismo_inicial}\n")
+                resultado_area.insert(ctk.END, f"Extremismo final: {extremismo}\n")
+                resultado_area.insert(ctk.END, f"Agentes moderados: {agentes_moderados}/{agentes_totales}\n")
+                resultado_area.insert(ctk.END, f"Tiempo total de ejecución: {execution_time:.4f} segundos\n")
+
+            else:
+                resultado_area.insert(ctk.END, "El archivo modexPD2.py no se encontró.\n")
+        except Exception as e:
+            resultado_area.insert(ctk.END, f"Error al ejecutar Programación Dinámica: {str(e)}\n")
 
 # Función para obtener todas las pruebas disponibles en la carpeta "Pruebas"
 def obtener_pruebas():
@@ -157,6 +186,8 @@ def obtener_algoritmos():
         algoritmos_disponibles.append("Fuerza Bruta")
     if os.path.exists("modexV.py"):
         algoritmos_disponibles.append("Voraz")
+    if os.path.exists("modexPD2.py"):
+        algoritmos_disponibles.append("Programación Dinámica")
     if not algoritmos_disponibles:
         algoritmos_disponibles = ["No hay algoritmos disponibles"]
 
@@ -226,7 +257,7 @@ opciones_pruebas.grid(row=0, column=0, padx=10)
 # Menú desplegable para Algoritmos
 opciones_algoritmos = ctk.CTkOptionMenu(
     frame_menus_botones,
-    values=["Fuerza Bruta", "Voraz"],
+    values=["Fuerza Bruta", "Voraz", "Programación Dinámica"],
     command=lambda seleccion: ejecutar_algoritmo(seleccion),
     fg_color="darkred", 
     button_color="darkred",  
