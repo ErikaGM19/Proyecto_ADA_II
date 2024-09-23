@@ -14,93 +14,55 @@ def calcular_extremismo(opiniones):
 def calcular_esfuerzo(opinion, receptividad):
     return math.ceil(abs(opinion) * (1 - receptividad))
 
-def programacion_dinamica(agentes, R_max):
+def modexPD(red_social):
+    agentes = red_social[0]
+    R_max = int(red_social[1])
+
     n = len(agentes)
     opiniones = [agente[0] for agente in agentes]
     receptividades = [agente[1] for agente in agentes]
 
-    # Calcular la suma total de los cuadrados
-    total_sum = sum(opinion ** 2 for opinion in opiniones)
-
     # Inicializar la tabla dp y la tabla keep
-    dp = [[0] * (R_max + 1) for _ in range(n + 1)]
-    keep = [[False] * (R_max + 1) for _ in range(n + 1)]
+    dp = [0] * (R_max + 1) 
+    keep = [[False] * (R_max + 1) for _ in range(n)]
+
+    esfuerzos = [calcular_esfuerzo(opiniones[i], receptividades[i]) for i in range(n)]
+    valores = [opiniones[i] ** 2 for i in range(n)]
 
     # Para cada agente
-    for i in range(1, n + 1):
-        o_i = opiniones[i - 1]
-        r_i = receptividades[i - 1]
-        effort_i = calcular_esfuerzo(o_i, r_i)
-        value_i = o_i ** 2
+    for i in range(n):
+        effort_i = esfuerzos[i]
+        value_i = valores[i]
 
-        for j in range(R_max + 1):
-            if effort_i <= j:
-                if dp[i - 1][j - effort_i] + value_i > dp[i - 1][j]:
-                    dp[i][j] = dp[i - 1][j - effort_i] + value_i
+        for j in range(R_max, effort_i - 1, -1):
+            if dp[j - effort_i] + value_i > dp[j]:
+                    dp[j] = dp[j - effort_i] + value_i
                     keep[i][j] = True
-                else:
-                    dp[i][j] = dp[i - 1][j]
-                    keep[i][j] = False
-            else:
-                dp[i][j] = dp[i - 1][j]
-                keep[i][j] = False
 
     # Encontrar el valor máximo dp[n][j] para j <= R_max
-    max_value = 0
-    best_j = 0
-    for j in range(R_max + 1):
-        if dp[n][j] > max_value:
-            max_value = dp[n][j]
-            best_j = j
+    max_value = max(dp)
+    esfuerzo_utilizado = dp.index(max_value)
+   
 
-    # Reconstruir la solución
-    j = best_j
-    E = [0] * n  # Estrategia, 1 si el agente es moderado, 0 en caso contrario
-    for i in range(n, 0, -1):
+    # Reconstruir la estrategia óptima
+    estrategia = [0] * n
+    j = esfuerzo_utilizado
+    for i in range(n - 1, -1, -1):
         if keep[i][j]:
-            E[i - 1] = 1
-            o_i = opiniones[i - 1]
-            r_i = receptividades[i - 1]
-            effort_i = calcular_esfuerzo(o_i, r_i)
-            j -= effort_i
-
-    # Ahora, calcular el extremismo después de aplicar la estrategia E
-    moderated_opinions = []
-    total_effort = 0
-    for i in range(n):
-        if E[i] == 1:
-            moderated_opinions.append(0)
-            o_i = opiniones[i]
-            r_i = receptividades[i]
-            effort_i = calcular_esfuerzo(o_i, r_i)
-            total_effort += effort_i
+            estrategia[i] = 1
+            j -= esfuerzos[i]
+            if j < 0:
+                break  # Evitar índices negativos
         else:
-            moderated_opinions.append(opiniones[i])
+            estrategia[i] = 0  # No moderar este agente
 
-    extremism = calcular_extremismo(moderated_opinions)
+   # Calcular el esfuerzo total utilizado
+    esfuerzo_total = sum(esfuerzos[i] for i in range(n) if estrategia[i] == 1)
 
-    return E, total_effort, extremism
+    # Aplicar la estrategia para obtener las opiniones moderadas
+    opiniones_moderadas = [0 if estrategia[i] == 1 else opiniones[i] for i in range(n)]
 
-# Leer entrada desde archivo
-with open('Pruebas/Prueba17.txt', 'r') as file:
-    lines = file.readlines()
+    # Calcular el extremismo final
+    extremismo_final = calcular_extremismo(opiniones_moderadas)
 
-n = int(lines[0].strip())
-agentes = []
-for i in range(1, n + 1):
-    line = lines[i].strip()
-    if line:
-        op, recep = line.split(',')
-        agentes.append((int(op), float(recep)))
-
-R_max = int(lines[-1].strip())
-
-print("Número de agentes:", n)
-print("Agentes:", agentes)
-print("R_max:", R_max)
-
-E, total_effort, extremism = programacion_dinamica(agentes, R_max)
-
-print("Estrategia E:", E)
-print("Esfuerzo total:", total_effort)
-print("Extremismo:", extremism)
+    return [estrategia, esfuerzo_total, extremismo_final]
