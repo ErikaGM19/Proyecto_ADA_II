@@ -18,6 +18,7 @@ root.title("Proyecto I - ADA II - Grupo 4")
 pruebas_disponibles = []
 algoritmos_disponibles = []
 prueba_seleccionada = None
+algoritmo_seleccionado = None
 
 # Función para cargar el archivo de prueba seleccionado
 def cargar_archivo(prueba):
@@ -50,6 +51,10 @@ def cargar_archivo(prueba):
 
 # Definir las funciones de los algoritmos
 def ejecutar_algoritmo(algoritmo):
+    if not algoritmo_seleccionado:
+        resultado_area.insert(ctk.END, "No se ha seleccionado un algoritmo.\n")
+        return
+
     resultado_area.delete("1.0", ctk.END)  # Limpiar el área de resultados
 
     # Cargar los datos de la prueba seleccionada
@@ -159,6 +164,11 @@ def ejecutar_algoritmo(algoritmo):
         except Exception as e:
             resultado_area.insert(ctk.END, f"Error al ejecutar Programación Dinámica: {str(e)}\n")
 
+def seleccionar_algoritmo(algoritmo):
+    global algoritmo_seleccionado
+    algoritmo_seleccionado = algoritmo
+    resultado_area.insert(ctk.END, f"Algoritmo seleccionado: {algoritmo}\n")
+
 # Función para obtener todas las pruebas disponibles en la carpeta "Pruebas"
 def obtener_pruebas():
     global pruebas_disponibles
@@ -258,7 +268,7 @@ opciones_pruebas.grid(row=0, column=0, padx=10)
 opciones_algoritmos = ctk.CTkOptionMenu(
     frame_menus_botones,
     values=["Fuerza Bruta", "Voraz", "Programación Dinámica"],
-    command=lambda seleccion: ejecutar_algoritmo(seleccion),
+    command=seleccionar_algoritmo,
     fg_color="darkred", 
     button_color="darkred",  
     button_hover_color="#c71818",  
