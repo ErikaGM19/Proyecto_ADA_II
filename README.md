@@ -14,32 +14,38 @@
 
 ### Algoritmos Implementados
 
-- **Fuerza Bruta (`modexFB.py`)**:
+- **Informe_proyecto1_ADAII.pdf**:
+   - Informe en formato PDF donde se detallan los resultados de las pruebas realizadas y el análisis de los algoritmos.
+
+- **Fuerza Bruta (`modexFB.py`)**: Implementación del algoritmo de Fuerza Bruta.
     - Se prueban todas las posibles combinaciones de agentes y se selecciona la combinación que minimiza el extremismo en la red social.
     - Este algoritmo garantiza encontrar la solución óptima, pero es computacionalmente inviable para redes grandes debido a su alta complejidad temporal.
 
-- **Algoritmo Voraz (`modexV.py`)**:
+- **Algoritmo Voraz (`modexV.py`)**: Implementación del algoritmo Voraz.
     - Selecciona los agentes a moderar basándose en un enfoque heurístico, eligiendo aquellos con la mayor receptividad en primer lugar.
     - Este enfoque es eficiente en tiempo, pero puede no encontrar siempre la solución óptima.
 
-- **Programación Dinámica (`modexPD2.py`)**:
+- **Programación Dinámica (`modexPD.py`)**: Implementación del algoritmo de Programación Dinámica.
     - Utiliza un enfoque basado en subproblemas para encontrar una solución óptima de manera más eficiente que la Fuerza Bruta, en términos de tiempo.
     - Sin embargo, su implementación consume una cantidad significativa de memoria, lo que puede ser un inconveniente en redes muy grandes.
 
 ### Interfaz Gráfica
 
-- **Interfaz (`interfaz_grafica.py`)**:
+- **Interfaz (`interfaz_grafica.py`)**: Archivo fuente principal que contiene la interfaz gráfica.
     - Implementa una aplicación gráfica en Python utilizando `Tkinter` para seleccionar pruebas y algoritmos.
     - Permite visualizar los resultados de las pruebas y la ejecución de los algoritmos en tiempo real.
 
 ### Pruebas
-
+- **Pruebas**: Carpeta que contiene más de 40 archivos de prueba en formato .txt utilizados para evaluar los algoritmos.
 En la carpeta `Pruebas`, se incluyen más de 40 pruebas con diferentes configuraciones de agentes y valores de `Rmax`, que permiten evaluar el desempeño de los tres algoritmos implementados. Las pruebas se dividen en tres categorías:
 - **Pruebas Pequeñas**: Redes con pocos agentes y valores bajos de `Rmax`.
 - **Pruebas Medianas**: Redes de tamaño intermedio.
 - **Pruebas Grandes**: Redes con un gran número de agentes y altos valores de `Rmax`.
 
-### Resultados
+### Readme
+- **README.md**: Este archivo, que incluye instrucciones detalladas para la ejecución del proyecto y la descripción de los archivos incluidos.
+
+## Resultados
 
 Los resultados de las pruebas se encuentran documentados en el informe del proyecto, disponible en este repositorio bajo el archivo `Informe_proyecto1_ADAII.pdf`. Se han realizado análisis comparativos de los tres algoritmos en términos de:
 - **Tiempo de ejecución**.
@@ -71,6 +77,9 @@ pip install -r requirements.txt
 
 3. El resultado de la prueba será mostrado en la interfaz, incluyendo la estrategia aplicada, el extremismo final, el esfuerzo total y el tiempo de ejecución.
 
+## Estructura de Carpetas
+- /Pruebas: Contiene todos los archivos de prueba necesarios para ejecutar los algoritmos.
+- /src: Contiene todos los archivos fuente de los algoritmos y la interfaz gráfica.
 
 ## Equipo
 
