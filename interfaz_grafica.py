@@ -20,6 +20,21 @@ algoritmos_disponibles = []
 prueba_seleccionada = None
 algoritmo_seleccionado = None
 
+
+# Función para guardar el resultado en un archivo
+def guardar_resultados(extremismo, esfuerzo_total, estrategia):
+    try:
+        archivo_salida = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+        if archivo_salida:
+            with open(archivo_salida, 'w') as archivo:
+                archivo.write(f"{extremismo}\n")
+                archivo.write(f"{esfuerzo_total}\n")
+                for mod in estrategia:
+                    archivo.write(f"{mod}\n")
+            resultado_area.insert(ctk.END, f"Resultados guardados en: {archivo_salida}\n")
+    except Exception as e:
+        resultado_area.insert(ctk.END, f"Error al guardar el archivo: {str(e)}\n")
+
 # Función para cargar el archivo de prueba seleccionado
 def cargar_archivo(prueba):
     try:
@@ -94,6 +109,9 @@ def ejecutar_algoritmo(algoritmo):
                 resultado_area.insert(ctk.END, f"Agentes moderados: {agentes_moderados}/{agentes_totales}\n")
                 resultado_area.insert(ctk.END, f"Tiempo total de ejecución: {execution_time:.4f} segundos\n")
 
+                # Guardar los resultados en el archivo de salida
+                guardar_resultados(extremismo, esfuerzo_total, estrategia)
+
             else:
                 resultado_area.insert(ctk.END, "El archivo modexFB.py no se encontró.\n")
         except Exception as e:
@@ -126,6 +144,8 @@ def ejecutar_algoritmo(algoritmo):
                 resultado_area.insert(ctk.END, f"Agentes moderados: {agentes_moderados}/{agentes_totales}\n")
                 resultado_area.insert(ctk.END, f"Tiempo total de ejecución: {execution_time:.4f} segundos\n")
                 
+                # Guardar los resultados en el archivo de salida
+                guardar_resultados(extremismo, esfuerzo_total, estrategia)
 
             else:
                 resultado_area.insert(ctk.END, "El archivo modexV.py no se encontró.\n")
@@ -134,20 +154,20 @@ def ejecutar_algoritmo(algoritmo):
 
     elif algoritmo == algoritmo == "Programación Dinámica":
         try:
-            # Verificar si modexPD2.py existe y cargarlo dinámicamente
-            if os.path.exists("modexPD2.py"):
-                spec = importlib.util.spec_from_file_location("modexPD2", "./modexPD2.py")
-                modexPD2 = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(modexPD2)
+            # Verificar si modexPD.py existe y cargarlo dinámicamente
+            if os.path.exists("modexPD.py"):
+                spec = importlib.util.spec_from_file_location("modexPD", "./modexPD.py")
+                modexPD = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(modexPD)
 
-                # Ejecutar la función modexPD del archivo modexPD2.py
+                # Ejecutar la función modexPD del archivo modexPD.py
                 start_time = time.time()
-                resultado = modexPD2.modexPD(red_social)
+                resultado = modexPD.modexPD(red_social)
                 end_time = time.time()
                 execution_time = end_time - start_time
 
                 estrategia, esfuerzo_total, extremismo = resultado
-                extremismo_inicial = modexPD2.calcular_extremismo([agente[0] for agente in red_social[0]])
+                extremismo_inicial = modexPD.calcular_extremismo([agente[0] for agente in red_social[0]])
                 agentes_moderados = sum(estrategia)
                 agentes_totales = len(estrategia)
 
@@ -159,8 +179,11 @@ def ejecutar_algoritmo(algoritmo):
                 resultado_area.insert(ctk.END, f"Agentes moderados: {agentes_moderados}/{agentes_totales}\n")
                 resultado_area.insert(ctk.END, f"Tiempo total de ejecución: {execution_time:.4f} segundos\n")
 
+                # Guardar los resultados en el archivo de salida
+                guardar_resultados(extremismo, esfuerzo_total, estrategia)
+                
             else:
-                resultado_area.insert(ctk.END, "El archivo modexPD2.py no se encontró.\n")
+                resultado_area.insert(ctk.END, "El archivo modexPD.py no se encontró.\n")
         except Exception as e:
             resultado_area.insert(ctk.END, f"Error al ejecutar Programación Dinámica: {str(e)}\n")
 
@@ -196,7 +219,7 @@ def obtener_algoritmos():
         algoritmos_disponibles.append("Fuerza Bruta")
     if os.path.exists("modexV.py"):
         algoritmos_disponibles.append("Voraz")
-    if os.path.exists("modexPD2.py"):
+    if os.path.exists("modexPD.py"):
         algoritmos_disponibles.append("Programación Dinámica")
     if not algoritmos_disponibles:
         algoritmos_disponibles = ["No hay algoritmos disponibles"]
