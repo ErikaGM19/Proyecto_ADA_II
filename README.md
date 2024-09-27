@@ -34,6 +34,8 @@
 - **Interfaz (`interfaz_grafica.py`)**: Archivo fuente principal que contiene la interfaz gráfica.
     - Implementa una aplicación gráfica en Python utilizando `Tkinter` para seleccionar pruebas y algoritmos.
     - Permite visualizar los resultados de las pruebas y la ejecución de los algoritmos en tiempo real.
+- **logoUV: (`logoUV_Gris.jpg`)**: Imagen del logo de la universidad del valle
+    - Imagen utilizada para la visualización en la interfaz
 
 ### Pruebas
 - **Pruebas**: Carpeta que contiene más de 40 archivos de prueba en formato .txt utilizados para evaluar los algoritmos.
